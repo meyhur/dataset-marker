@@ -1,5 +1,6 @@
 __pycache__/
 node_modules/
 /dataset_gen/data/migrations/*.py
+!/dataset_gen/data/migrations/__init__.py
 *.sqlite3
 .git1/
