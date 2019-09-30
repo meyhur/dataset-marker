@@ -9,7 +9,7 @@ from time import sleep
 sys.path.append("../")
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dataset_gen.settings')
 django.setup()
-from data.models import Phrase, Ner
+from data.models import Phrase, Ner, Valid
 
 def add_value(text, has_parent, id_prev, id_db):
     phrases = Phrase.objects.filter(id_db=id_db).filter(text=text)
@@ -65,6 +65,12 @@ def main():
                             order=row[4])
     print('End add phrase to DB')
     print()
+
+    print('Start add valid to DB')
+    Valid(name='Валидно', value='True').save()
+    Valid(name='Не валидно', value='False').save()
+    print('End add valid to DB')
+
     print('Finita')
 
 if __name__ == '__main__':
