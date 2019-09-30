@@ -1,0 +1,20 @@
+name,desc,abbr,color,order
+O,Null,O,#fff,499
+PERSON,People including fictional,PERSON,#FFCDD2,500
+NORP,Nationalities or religious or political groups,NORP,#F8BBD0,500
+FACILITY,"Buildings, airports, highways, bridges, etc.",FAC,#E1BEE7,500
+ORGANIZATION,"Companies, agencies, institutions, etc.",ORG,#EA80FC,500
+GPE,"Countries, cities, states",GPE,#D1C4E9,500
+LOCATION,"Non-GPE locations, mountain ranges, bodies of water",LOC,#B388FF,500
+PRODUCT,"Vehicles, weapons, foods, etc. (Not services)",PRODUCT,#C5CAE9,500
+EVENT,"Named hurricanes, battles, wars, sports events, etc.",EVENT,#8C9EFF,500
+WORK OF ART,"Titles of books, songs, etc.",WOA,#BBDEFB,500
+LAW,Named documents made into laws,LAW,#B3E5FC,500
+LANGUAGE,Any named language,LANG ,#80D8FF,500
+DATE,Absolute or relative dates or periods,DATE,#B2EBF2,500
+TIME,Times smaller than a day,TIME,#84FFFF,500
+PERCENT,Percentage (including “%”),PERCENT,#B2DFDB,500
+MONEY,"Monetary values, including unit",MONEY,#A7FFEB,500
+QUANTITY,"Measurements, as of weight or distance",QUANTITY,#C8E6C9,500
+ORDINAL,"“first”, “second”",ORDINAL,#69F0AE,500
+CARDINAL,Numerals that do not fall under another type,CARDINAL,#DCEDC8,500

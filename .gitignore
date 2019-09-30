@@ -1,0 +1,5 @@
+__pycache__/
+node_modules/
+/dataset_gen/data/migrations/*.py
+*.sqlite3
+.git1/
