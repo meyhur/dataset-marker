@@ -214,6 +214,7 @@ def action(request):
         valid = data.get('valid')
         skills = json.loads(data.get('skills'))
         ners = json.loads(data.get('ners'))
+        ners[0] = [n.replace('~!~!~', '=') for n in ners[0]]
         phraseUpdate(phrase_id, valid, skills, ners)
     elif action == 'addNer':
         ner = data.get('ner')
