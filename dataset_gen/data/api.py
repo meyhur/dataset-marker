@@ -17,7 +17,7 @@ django.setup()
 from data.models import Phrase, Skill, Valid, Ner
 
 def markDuringFalse():
-    phrases = Phrase.objects.filter(during=True, during_start__lte=(timezone.now()-timedelta(minutes=5)))
+    phrases = Phrase.objects.filter(during=True, during_start__lte=(timezone.now()-timedelta(minutes=1)))
     phrases.update(during=False)
 
 def get_full_text(cur_id):
