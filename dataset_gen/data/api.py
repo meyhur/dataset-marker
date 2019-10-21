@@ -1,6 +1,8 @@
 import os
+import re
 import sys
 import json
+import random
 import requests
 from django.utils import timezone
 import django
@@ -11,7 +13,6 @@ from datetime import timedelta
 ###########################################
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)  # path to the parent dir of DjangoTastypie
-# sys.path.append("/var/www/html/parsersites/")
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dataset_gen.settings')
 django.setup()
 from data.models import Phrase, Skill, Valid, Ner
@@ -48,10 +49,28 @@ def getNext(id_prev):
     return None, False
 
 def updateNers(phrase_id):
+    API = False #Если есть апи для NER - True
+
     try:
         phrase = Phrase.objects.get(pk=phrase_id)
-        r = requests.post('http://192.168.0.88:5000/ner', json={"context": [phrase.text]})
-        phrase.ners = r.json()[0]
+
+        if API:
+            API_URL = 'http://192.168.0.88:5000/model' # URL api для получения ner
+
+            r = requests.post(API_URL, json={"x": [phrase.text]})
+            phrase.ners = r.json()[0]
+        else:
+            s_text = re.split(r'/(\w\S+\w)|(\w+)|(\s*\.{3}\s*)|(\s*[^\w\s]\s*)|', phrase.text)
+            j_text = []
+            d_text = []
+            n_text = []
+            for i in range(len(s_text)):
+                if s_text[i] and s_text[i].strip():
+                    d_text.append(s_text[i].strip())
+                    n_text.append('O')
+            j_text.append(d_text)
+            j_text.append(n_text)
+            phrase.ners = j_text
         phrase.save()
         return phrase.ners
     except Exception as e:
@@ -67,6 +86,37 @@ def getNersToken(phrase_id):
 
     return ners
 
+def updateSkills(phrase_id):
+    API = False #Если есть апи для классификации - True
+
+    try:
+        phrase = Phrase.objects.get(pk=phrase_id)
+
+        if API:
+            API_URL = 'http://192.168.0.88:5001/model' # URL api для классификации
+            
+            r = requests.post(API_URL, json={"x": [phrase.text]})
+
+            skills = []
+            for el in r.json()[0][1]:
+                skills.append(Skill.objects.get(slug=el))
+            phrase.skills.set(skills)
+            phrase.save()
+            
+        return list(phrase.skills.values())
+    except Exception as e:
+        print(e)
+        return []
+
+def getSkillsToken(phrase_id):
+    phrase = Phrase.objects.get(pk=phrase_id)
+    if len(phrase.skills.values()) == 0:
+        skills = updateSkills(phrase_id)
+    else:
+        skills = list(phrase.skills.values())
+
+    return skills
+
 def getPhrase(element=None):
     # фразы у которых отметка during=True
     # и у которых время вышло
@@ -76,8 +126,7 @@ def getPhrase(element=None):
     now = timezone.now()
     obj = {}
 
-    all_phrases = Phrase.objects.all().order_by('-id')
-    last_phrase = all_phrases[0]
+    processed_phrase = Phrase.objects.filter(processed=True)
 
     if element:
         phrases = Phrase.objects.filter(pk=element)
@@ -85,7 +134,11 @@ def getPhrase(element=None):
         phrases = Phrase.objects.filter(processed=False, during=False).order_by('id')
 
     if phrases.count() > 0:
-        phrase = phrases[0]
+        if element==None:
+            phrase = phrases[random.randint(0, phrases.count())]
+        else:
+            phrase = phrases[0]
+
         phrase.during = True
         phrase.during_start = now
         phrase.save()
@@ -93,20 +146,38 @@ def getPhrase(element=None):
         obj['id'] = phrase.id
         obj['text'] = phrase.text
         obj['full_text'] = get_full_text(phrase.id)
-        obj['skills'] = list(phrase.skills.values())
-        obj['last_phrase'] = last_phrase.id
+        obj['skills'] = getSkillsToken(phrase.id)
+        obj['processed_phrase'] = processed_phrase.count()
         obj['valid'] = phrase.valid.value if phrase.valid else None
         obj['ners'] = getNersToken(phrase.id)
 
     return obj
 
-def PrevPhrase(element):
+def PrevPhraseProc(element):
+    '''
+    Костыль, писал индус Сергей
+    '''
     prev_no = True
     while prev_no:
-        phrases = Phrase.objects.filter(pk=element-1)
+        phrases = Phrase.objects.filter(processed=True, pk=element-1)
         element -= 1
         if phrases.count() > 0:
             prev_no = False
+            return getPhrase(phrases[0].id)
+
+def NextPhraseProc(element):
+    '''
+    Костыль, писал индус Сергей
+    '''
+    all_phrases = Phrase.objects.all().order_by('-id')
+    last_phrase = all_phrases[0]
+    
+    next_no = True
+    while next_no and element < last_phrase.id:
+        phrases = Phrase.objects.filter(processed=True, pk=element+1)
+        element += 1
+        if phrases.count() > 0:
+            next_no = False
             return getPhrase(phrases[0].id)
 
 def NextPhrase(element):
@@ -197,9 +268,12 @@ def action(request):
     elif action == 'OpenEl':
         element = data.get('element')
         result['phrase'] = getPhrase(int(element))
-    elif action == 'PrevEl':
+    elif action == 'PrevElproc':
         element = data.get('element')
-        result['phrase'] = PrevPhrase(int(element))
+        result['phrase'] = PrevPhraseProc(int(element))
+    elif action == 'NextElproc':
+        element = data.get('element')
+        result['phrase'] = NextPhraseProc(int(element))
     elif action == 'NextEl':
         element = data.get('element')
         result['phrase'] = NextPhrase(int(element))

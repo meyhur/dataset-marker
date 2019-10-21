@@ -16,6 +16,7 @@ class Skill(models.Model):
     Скилы
     '''
     name = models.CharField('Наименование умения', max_length=200)
+    slug = models.SlugField('Slug', max_length=200, default='', unique=True)
     description = models.TextField('Описание умения', blank=True)
 
     class Meta:
@@ -31,7 +32,7 @@ class Ner(models.Model):
     '''
     name = models.CharField('Наименование', max_length=200)
     description = models.TextField('Описание', blank=True)
-    abbr = models.CharField('Аббревиатура', max_length=10)
+    abbr = models.CharField('Аббревиатура', max_length=15)
     color = models.CharField(verbose_name='Color', max_length=7,
                              help_text='HEX color, as #RRGGBB')
     order = models.PositiveIntegerField('Сортировка', default=500,)

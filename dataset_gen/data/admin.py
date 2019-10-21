@@ -30,5 +30,5 @@ class PhraseAdmin(admin.ModelAdmin):
     ordering = ['id']
     actions = [check_during_false, check_processed_false]
 
-    check_during_false.short_description = u'Снить пометку "Обрабатывается"'
-    check_processed_false.short_description = u'Снить пометку "Размечено"'
+    check_during_false.short_description = u'Снять пометку "Обрабатывается"'
+    check_processed_false.short_description = u'Снять пометку "Размечено"'
